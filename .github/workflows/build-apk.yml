@@ -93,6 +93,8 @@ jobs:
           sed -i 's/val ax=dx/val ax:Float=dx/' "$MAIN"
           sed -i 's/val ay=dy/val ay:Float=dy/' "$MAIN"
           sed -i 's/val cs=(folderOffset.x\/cell)\.roundToInt()/val cs=(folderOffset.x\/cell).roundToInt()/' "$MAIN"
+          # Run 20: LocalDensity is a Density object; convert dp to px explicitly.
+          sed -i 's/86f\*density+gap/with(density){86.dp.toPx()}+gap/g' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

@@ -56,13 +56,15 @@ jobs:
         run: |
           set -euxo pipefail
           echo "Gradle environment:"
-          gradle --version
           if [ -f gradle/wrapper/gradle-wrapper.jar ]; then
             chmod +x gradlew
             ./gradlew --no-daemon --stacktrace assembleDebug
           else
-            echo "gradle-wrapper.jar missing; using installed Gradle."
-            gradle --no-daemon --stacktrace assembleDebug
+            echo "gradle-wrapper.jar missing; using Gradle 9.5 for AGP compatibility."
+            curl -fsSL https://services.gradle.org/distributions/gradle-9.5-bin.zip -o /tmp/gradle.zip
+            rm -rf /tmp/gradle-9.5
+            unzip -q /tmp/gradle.zip -d /tmp
+            /tmp/gradle-9.5/bin/gradle --no-daemon --stacktrace assembleDebug
           fi
 
       - name: Upload APK

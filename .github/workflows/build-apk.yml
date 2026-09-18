@@ -43,6 +43,15 @@ jobs:
           sed -i 's/override fun onNewIntent(intent:Intent?)/override fun onNewIntent(intent:Intent)/' "$MAIN"
           sed -i 's/setIntent(intent)/setIntent(intent)/' "$MAIN"
           sed -i 's/ComponentName(pkg,activity)/ComponentName(pkg ?: return,activity)/' "$MAIN"
+          # Targeted Kotlin/Compose fixes for the uploaded launcher source.
+          sed -i 's/private fun NeumorphicCard(/@Composable private fun NeumorphicCard(/' "$MAIN"
+          sed -i 's/Surface(onClick=vm::resetDefaults/Surface(onClick={vm.resetDefaults(context)}/' "$MAIN"
+          sed -i 's/vm::resetDefaults/{vm.resetDefaults(context)}/g' "$MAIN"
+          sed -i 's/page,index/pageIndex,index/g' "$MAIN"
+          sed -i 's/val cell=((maxWidth.toPx()-gap\*(cols-1))/val cell=((with(density){maxWidth.toPx()}-gap*(cols-1))/' "$MAIN"
+          sed -i 's/@Composable private fun composedClickable/@Composable private fun composedClickable/' "$MAIN"
+          # Fix local modifier helper calling composables by making the helper composable.
+          sed -i 's/private fun Modifier.clickableWithoutRipple/@Composable private fun Modifier.clickableWithoutRipple/' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

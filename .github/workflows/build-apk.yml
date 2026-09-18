@@ -29,11 +29,19 @@ jobs:
           fi
           echo "PROJECT_ROOT=$ROOT" >> "$GITHUB_ENV"
           echo "Project root: $ROOT"
-          # AndroidX Activity 1.11.0 requires compileSdk 36.
           find "$ROOT" -type f -name "build.gradle.kts" -exec sed -i "s/compileSdk = 35/compileSdk = 36/g" {} +
           find "$ROOT" -type f -name "build.gradle" -exec sed -i "s/compileSdk 35/compileSdk 36/g" {} +
           grep -R "compileSdk" "$ROOT" --include="build.gradle*" || true
-          ls -la "$ROOT"
+          MAIN="$(find "$ROOT" -type f -name MainActivity.kt -print -quit)"
+          test -n "$MAIN"
+          echo "=== MAINACTIVITY DIAGNOSTIC ==="
+          sed -n '1,240p' "$MAIN"
+          sed -n '490,535p' "$MAIN"
+          sed -n '690,790p' "$MAIN"
+          sed -n '910,940p' "$MAIN"
+          sed -n '1085,1110p' "$MAIN"
+          sed -n '1185,1238p' "$MAIN"
+          sed -n '1275,1330p' "$MAIN"
 
       - uses: actions/setup-java@v5
         with:
@@ -59,12 +67,10 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          echo "Gradle environment:"
           if [ -f gradle/wrapper/gradle-wrapper.jar ]; then
             chmod +x gradlew
             ./gradlew --no-daemon --stacktrace assembleDebug
           else
-            echo "gradle-wrapper.jar missing; using Gradle 9.5.0 for AGP compatibility."
             curl -fsSL https://services.gradle.org/distributions/gradle-9.5.0-bin.zip -o /tmp/gradle.zip
             rm -rf /tmp/gradle-9.5.0
             unzip -q /tmp/gradle.zip -d /tmp

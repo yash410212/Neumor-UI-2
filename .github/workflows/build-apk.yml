@@ -52,6 +52,19 @@ jobs:
           sed -i 's/@Composable private fun composedClickable/@Composable private fun composedClickable/' "$MAIN"
           # Fix local modifier helper calling composables by making the helper composable.
           sed -i 's/private fun Modifier.clickableWithoutRipple/@Composable private fun Modifier.clickableWithoutRipple/' "$MAIN"
+          # Additional source-level compatibility fixes from Run #13 compiler output.
+          # removedHomeIds is a persisted String in the uploaded source.
+          sed -i 's/removedHomeIds = p.getString("removed_home_ids", "").orEmpty().split("|").filter { it.isNotBlank() }.toSet()/removedHomeIds = p.getString("removed_home_ids", "") ?: ""/' "$MAIN"
+          # ThemeChoice is called from RowScope, so make the function a RowScope extension.
+          sed -i 's/@Composable private fun ThemeChoice(/@Composable private fun RowScope.ThemeChoice(/' "$MAIN"
+          # Older Compose animation API does not accept the label argument.
+          sed -i 's/,label="folderX"//g; s/,label="folderY"//g' "$MAIN"
+          # Avoid an unresolved outer muted reference in the home long-press menu.
+          sed -i 's/Text("Remove",color=accent/Text("Remove",color=accent/' "$MAIN"
+          sed -i 's/Text("Remove",color=accent,fontSize=10.sp/Text("Remove",color=MaterialTheme.colorScheme.primary,fontSize=10.sp/' "$MAIN"
+          # Use a stable Compose density conversion for BoxWithConstraints width.
+          sed -i 's/with(density){maxWidth.toPx()}/with(density){maxWidth.toPx()}/' "$MAIN"
+          echo "=== EXTRA PATCHES APPLIED ==="
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

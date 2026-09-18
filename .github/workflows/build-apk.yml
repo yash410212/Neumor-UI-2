@@ -86,6 +86,13 @@ jobs:
           sed -i 's/^[[:space:]]*val ax by androidx\.compose\.animation\.core\.animateFloatAsState.*/                            val ax=dx/' "$MAIN"
           sed -i 's/^[[:space:]]*val ay by androidx\.compose\.animation\.core\.animateFloatAsState.*/                            val ay=dy/' "$MAIN"
           sed -i 's/^[[:space:]]*onDragEnd={val from=folderDragging.*/                                    onDragEnd={ val from:Int=folderDragging; val to:Int=folderTarget; if(from>=0 \&\& to>=0 \&\& from!=to){ vm.moveInsideFolder(folder.id,from,to) }; folderDragging=-1; folderTarget=-1; folderOffset=androidx.compose.ui.geometry.Offset.Zero }/' "$MAIN"
+          # Run 19: harden folder grid numeric types and remove problematic drag animation math.
+          sed -i 's/val cell=((with(density){maxWidth.toPx()}-gap\*(cols-1))\/cols).coerceAtLeast(1f)/val cell:Float=((with(density){maxWidth.toPx()}-gap*(cols-1))\/cols).coerceAtLeast(1f)/' "$MAIN"
+          sed -i 's/val dx=(displayIndex%cols-index%cols)\*cell + if(isDragging) folderOffset.x else 0f/val dx:Float=(displayIndex%cols-index%cols).toFloat()*cell + if(isDragging) folderOffset.x else 0f/' "$MAIN"
+          sed -i 's/val dy=(displayIndex\/cols-index\/cols)\*(86f\*density+gap) + if(isDragging) folderOffset.y else 0f/val dy:Float=(displayIndex\/cols-index\/cols).toFloat()*(86f*density+gap) + if(isDragging) folderOffset.y else 0f/' "$MAIN"
+          sed -i 's/val ax=dx/val ax:Float=dx/' "$MAIN"
+          sed -i 's/val ay=dy/val ay:Float=dy/' "$MAIN"
+          sed -i 's/val cs=(folderOffset.x\/cell)\.roundToInt()/val cs=(folderOffset.x\/cell).roundToInt()/' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

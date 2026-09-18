@@ -82,6 +82,10 @@ jobs:
           sed -i 's/val ax by androidx.compose.animation.core.animateFloatAsState(dx,androidx.compose.animation.core.spring(dampingRatio=.82f,stiffness=300f),label="folderX")/val ax=dx/' "$MAIN"
           sed -i 's/val ay by androidx.compose.animation.core.animateFloatAsState(dy,androidx.compose.animation.core.spring(dampingRatio=.82f,stiffness=300f),label="folderY")/val ay=dy/' "$MAIN"
           sed -i 's/(86.dp.value\*density+gap)/(86f*density+gap)/g' "$MAIN"
+          # Run 18: replace fragile folder animation/drag lambdas with compiler-safe expressions.
+          sed -i 's/^[[:space:]]*val ax by androidx\.compose\.animation\.core\.animateFloatAsState.*/                            val ax=dx/' "$MAIN"
+          sed -i 's/^[[:space:]]*val ay by androidx\.compose\.animation\.core\.animateFloatAsState.*/                            val ay=dy/' "$MAIN"
+          sed -i 's/^[[:space:]]*onDragEnd={val from=folderDragging.*/                                    onDragEnd={ val from:Int=folderDragging; val to:Int=folderTarget; if(from>=0 \&\& to>=0 \&\& from!=to){ vm.moveInsideFolder(folder.id,from,to) }; folderDragging=-1; folderTarget=-1; folderOffset=androidx.compose.ui.geometry.Offset.Zero }/' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

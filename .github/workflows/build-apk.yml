@@ -112,48 +112,10 @@ jobs:
           sed -i 's/var chargingNotchEnabled=true/var chargingNotchEnabled=true private set/' "$MAIN"
           sed -i 's/var chargingNotchStyle="Glow"/var chargingNotchStyle="Glow" private set/' "$MAIN"
           sed -i 's/var chargingNotchSpeed=70f/var chargingNotchSpeed=70f private set/' "$MAIN"
-          # Run 23: rename JVM signatures of explicit setter methods so Kotlin properties can keep their source names.
-          # This preserves all UI behavior and only resolves JVM accessor collisions.
-          for spec in \
-            'setIconSize|setIconSizeExplicit' \
-            'setIconShape|setIconShapeExplicit' \
-            'setAnimationValue|setAnimationValueExplicit' \
-            'setAnimationDuration|setAnimationDurationExplicit' \
-            'setAnimationType|setAnimationTypeExplicit' \
-            'setEdgeGesture|setEdgeGestureExplicit' \
-            'setSettingsPage|setSettingsPageExplicit' \
-            'setDrawerListMode|setDrawerListModeExplicit' \
-            'setDrawerCategory|setDrawerCategoryExplicit' \
-            'setCurrentHomePage|setCurrentHomePageExplicit' \
-            'setPerformanceMode|setPerformanceModeExplicit' \
-            'setProductiveMode|setProductiveModeExplicit' \
-            'setStudyMode|setStudyModeExplicit' \
-            'setChargingNotchEnabled|setChargingNotchEnabledExplicit' \
-            'setChargingNotchStyle|setChargingNotchStyleExplicit' \
-            'setChargingNotchSpeed|setChargingNotchSpeedExplicit'; do
-            OLD="${spec%%|*}"; NEW="${spec##*|}"
-            sed -i "s/^[[:space:]]*fun ${OLD}(/    @kotlin.jvm.JvmName(\"${NEW}\")\\
-    fun ${OLD}(/" "$MAIN"
-          done
-          # The source may use compact one-line declarations; handle those too.
-          sed -i 's/fun setIconSize(/@kotlin.jvm.JvmName("setIconSizeExplicit") fun setIconSize(/g' "$MAIN"
-          sed -i 's/fun setIconShape(/@kotlin.jvm.JvmName("setIconShapeExplicit") fun setIconShape(/g' "$MAIN"
-          sed -i 's/fun setAnimationValue(/@kotlin.jvm.JvmName("setAnimationValueExplicit") fun setAnimationValue(/g' "$MAIN"
-          sed -i 's/fun setAnimationDuration(/@kotlin.jvm.JvmName("setAnimationDurationExplicit") fun setAnimationDuration(/g' "$MAIN"
-          sed -i 's/fun setAnimationType(/@kotlin.jvm.JvmName("setAnimationTypeExplicit") fun setAnimationType(/g' "$MAIN"
-          sed -i 's/fun setEdgeGesture(/@kotlin.jvm.JvmName("setEdgeGestureExplicit") fun setEdgeGesture(/g' "$MAIN"
-          sed -i 's/fun setSettingsPage(/@kotlin.jvm.JvmName("setSettingsPageExplicit") fun setSettingsPage(/g' "$MAIN"
-          sed -i 's/fun setDrawerListMode(/@kotlin.jvm.JvmName("setDrawerListModeExplicit") fun setDrawerListMode(/g' "$MAIN"
-          sed -i 's/fun setDrawerCategory(/@kotlin.jvm.JvmName("setDrawerCategoryExplicit") fun setDrawerCategory(/g' "$MAIN"
-          sed -i 's/fun setCurrentHomePage(/@kotlin.jvm.JvmName("setCurrentHomePageExplicit") fun setCurrentHomePage(/g' "$MAIN"
-          sed -i 's/fun setPerformanceMode(/@kotlin.jvm.JvmName("setPerformanceModeExplicit") fun setPerformanceMode(/g' "$MAIN"
-          sed -i 's/fun setProductiveMode(/@kotlin.jvm.JvmName("setProductiveModeExplicit") fun setProductiveMode(/g' "$MAIN"
-          sed -i 's/fun setStudyMode(/@kotlin.jvm.JvmName("setStudyModeExplicit") fun setStudyMode(/g' "$MAIN"
-          sed -i 's/fun setChargingNotchEnabled(/@kotlin.jvm.JvmName("setChargingNotchEnabledExplicit") fun setChargingNotchEnabled(/g' "$MAIN"
-          sed -i 's/fun setChargingNotchStyle(/@kotlin.jvm.JvmName("setChargingNotchStyleExplicit") fun setChargingNotchStyle(/g' "$MAIN"
-          sed -i 's/fun setChargingNotchSpeed(/@kotlin.jvm.JvmName("setChargingNotchSpeedExplicit") fun setChargingNotchSpeed(/g' "$MAIN"
-          echo "=== RUN 23 JVM SETTER PATCH ==="
-          grep -nE 'JvmName|fun set(Icon|Animation|Edge|Settings|Drawer|CurrentHome|Performance|Productive|Study|Charging)' "$MAIN" || true
+          # Run 23: rename explicit setter-like functions to avoid JVM property accessor clashes.
+          # This is source-only wiring: property names, UI, and behavior remain unchanged.
+          sed -i 's/\\bsetIconSize(/applyIconSize(/g; s/\\bsetIconShape(/applyIconShape(/g; s/\\bsetAnimationValue(/applyAnimationValue(/g; s/\\bsetAnimationDuration(/applyAnimationDuration(/g; s/\\bsetAnimationType(/applyAnimationType(/g; s/\\bsetEdgeGesture(/applyEdgeGesture(/g; s/\\bsetSettingsPage(/applySettingsPage(/g; s/\\bsetDrawerListMode(/applyDrawerListMode(/g; s/\\bsetDrawerCategory(/applyDrawerCategory(/g; s/\\bsetCurrentHomePage(/applyCurrentHomePage(/g; s/\\bsetPerformanceMode(/applyPerformanceMode(/g; s/\\bsetProductiveMode(/applyProductiveMode(/g; s/\\bsetStudyMode(/applyStudyMode(/g; s/\\bsetChargingNotchEnabled(/applyChargingNotchEnabled(/g; s/\\bsetChargingNotchStyle(/applyChargingNotchStyle(/g; s/\\bsetChargingNotchSpeed(/applyChargingNotchSpeed(/g' "$MAIN"
+          echo "=== RUN 23 SETTER FUNCTION RENAME PATCH ==="
           # Run 22: @JvmField removes generated JVM accessors that clash with explicit setters.
           sed -i 's/var iconSize=IconSize.MEDIUM private set/@JvmField var iconSize=IconSize.MEDIUM/' "$MAIN"
           sed -i 's/var iconShape=IconShape.ROUNDED private set/@JvmField var iconShape=IconShape.ROUNDED/' "$MAIN"

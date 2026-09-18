@@ -65,6 +65,16 @@ jobs:
           # Use a stable Compose density conversion for BoxWithConstraints width.
           sed -i 's/with(density){maxWidth.toPx()}/with(density){maxWidth.toPx()}/' "$MAIN"
           echo "=== EXTRA PATCHES APPLIED ==="
+          # Run 14: fix persisted IDs and remaining Compose API/type errors.
+          sed -i 's/productiveMode=p.getBoolean("productiveMode",false)/productiveMode=p.getString("productiveMode","false") ?: "false"/' "$MAIN"
+          sed -i 's/studyMode=p.getBoolean("studyMode",false)/studyMode=p.getString("studyMode","false") ?: "false"/' "$MAIN"
+          sed -i 's/removedHomeIds = p.getString("removed_home_ids", "") ?: ""/removedHomeIds = (p.getString("removed_home_ids", "") ?: "").split("|").filter { it.isNotBlank() }.toSet()/' "$MAIN"
+          # Replace undeclared muted with the existing mutedColor/theme color expression.
+          sed -i 's/color=muted/color=MaterialTheme.colorScheme.onSurfaceVariant/g' "$MAIN"
+          # Compose Dp-to-px conversion: use LocalDensity explicitly where needed.
+          sed -i 's/maxWidth.toPx()/with(LocalDensity.current) { maxWidth.toPx() }/g' "$MAIN"
+          # Remove accidental nested density wrapper from previous patch if produced.
+          sed -i 's/with(density){with(LocalDensity.current) { maxWidth.toPx() }}/with(LocalDensity.current) { maxWidth.toPx() }/g' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

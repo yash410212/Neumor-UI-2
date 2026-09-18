@@ -72,8 +72,10 @@ jobs:
           # Replace undeclared muted with the existing mutedColor/theme color expression.
           sed -i 's/color=muted/color=MaterialTheme.colorScheme.onSurfaceVariant/g' "$MAIN"
           # Compose Dp-to-px conversion: use LocalDensity explicitly where needed.
-          grep -q 'import androidx.compose.ui.unit.LocalDensity' "$MAIN" || sed -i '/import androidx.compose.ui.unit./a import androidx.compose.ui.unit.LocalDensity' "$MAIN"
+          grep -q 'import androidx.compose.ui.platform.LocalDensity' "$MAIN" || sed -i '/import androidx.compose.ui.platform./a import androidx.compose.ui.platform.LocalDensity' "$MAIN"
           sed -i 's/maxWidth.toPx()/with(LocalDensity.current) { maxWidth.toPx() }/g' "$MAIN"
+          sed -i 's/decodeWidgets(p.getString("widgets_home", ""))/decodeWidgets(p.getString("widgets_home", "") ?: "")/g' "$MAIN"
+          sed -i 's/,label="folderX"//g; s/,label="folderY"//g; s/,label="folderX"//g; s/,label="folderY"//g' "$MAIN"
           # Remove accidental nested density wrapper from previous patch if produced.
           sed -i 's/with(density){with(LocalDensity.current) { maxWidth.toPx() }}/with(LocalDensity.current) { maxWidth.toPx() }/g' "$MAIN"
           echo "=== PATCHED IMPORTS ==="

@@ -95,6 +95,23 @@ jobs:
           sed -i 's/val cs=(folderOffset.x\/cell)\.roundToInt()/val cs=(folderOffset.x\/cell).roundToInt()/' "$MAIN"
           # Run 20: LocalDensity is a Density object; convert dp to px explicitly.
           sed -i 's/86f\*density+gap/with(density){86.dp.toPx()}+gap/g' "$MAIN"
+          # Run 21: Kotlin property setters clash with explicitly named setter methods.
+          sed -i 's/var iconSize=IconSize.MEDIUM/var iconSize=IconSize.MEDIUM private set/' "$MAIN"
+          sed -i 's/var iconShape=IconShape.ROUNDED/var iconShape=IconShape.ROUNDED private set/' "$MAIN"
+          sed -i 's/var animationValue=0.8f/var animationValue=0.8f private set/' "$MAIN"
+          sed -i 's/var animationDuration=0.28f/var animationDuration=0.28f private set/' "$MAIN"
+          sed -i 's/var animationType=AnimationType.SPRING/var animationType=AnimationType.SPRING private set/' "$MAIN"
+          sed -i 's/var edgeGesture=EdgeGesture.LEFT/var edgeGesture=EdgeGesture.LEFT private set/' "$MAIN"
+          sed -i 's/var settingsPage="main"/var settingsPage="main" private set/' "$MAIN"
+          sed -i 's/var drawerListMode=true/var drawerListMode=true private set/' "$MAIN"
+          sed -i 's/var drawerCategory="All"/var drawerCategory="All" private set/' "$MAIN"
+          sed -i 's/var currentHomePage=0/var currentHomePage=0 private set/' "$MAIN"
+          sed -i 's/var performanceMode=PerformanceMode.BALANCED/var performanceMode=PerformanceMode.BALANCED private set/' "$MAIN"
+          sed -i 's/var productiveMode=false/var productiveMode=false private set/' "$MAIN"
+          sed -i 's/var studyMode=false/var studyMode=false private set/' "$MAIN"
+          sed -i 's/var chargingNotchEnabled=true/var chargingNotchEnabled=true private set/' "$MAIN"
+          sed -i 's/var chargingNotchStyle="Glow"/var chargingNotchStyle="Glow" private set/' "$MAIN"
+          sed -i 's/var chargingNotchSpeed=70f/var chargingNotchSpeed=70f private set/' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

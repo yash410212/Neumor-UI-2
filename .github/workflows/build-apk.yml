@@ -78,6 +78,10 @@ jobs:
           sed -i 's/,label="folderX"//g; s/,label="folderY"//g; s/,label="folderX"//g; s/,label="folderY"//g' "$MAIN"
           # Remove accidental nested density wrapper from previous patch if produced.
           sed -i 's/with(density){with(LocalDensity.current) { maxWidth.toPx() }}/with(LocalDensity.current) { maxWidth.toPx() }/g' "$MAIN"
+          # Fix Run 17 folder drag arithmetic/animation overloads.
+          sed -i 's/val ax by androidx.compose.animation.core.animateFloatAsState(dx,androidx.compose.animation.core.spring(dampingRatio=.82f,stiffness=300f),label="folderX")/val ax=dx/' "$MAIN"
+          sed -i 's/val ay by androidx.compose.animation.core.animateFloatAsState(dy,androidx.compose.animation.core.spring(dampingRatio=.82f,stiffness=300f),label="folderY")/val ay=dy/' "$MAIN"
+          sed -i 's/(86.dp.value\*density+gap)/(86f*density+gap)/g' "$MAIN"
           echo "=== PATCHED IMPORTS ==="
           grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

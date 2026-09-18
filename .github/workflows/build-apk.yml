@@ -1,0 +1,90 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Extract uploaded project
+        shell: bash
+        run: |
+          set -e
+          mkdir -p project
+          ZIP="$(find . -maxdepth 2 -type f -name '*.zip' | head -n 1)"
+          test -n "$ZIP"
+          unzip -q "$ZIP" -d project
+
+          # Handle ZIPs that contain one wrapper directory.
+          ROOT="project"
+          if [ ! -f "$ROOT/settings.gradle" ] && [ ! -f "$ROOT/settings.gradle.kts" ]; then
+            CANDIDATE="$(find "$ROOT" -maxdepth 3 \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)"
+            test -n "$CANDIDATE"
+            ROOT="$(dirname "$CANDIDATE")"
+          fi
+
+          echo "PROJECT_ROOT=$ROOT" >> "$GITHUB_ENV"
+          echo "Project root: $ROOT"
+          find "$ROOT" -maxdepth 2 -type f | sort | head -100
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Make Gradle executable
+        shell: bash
+        working-directory: ${{ env.PROJECT_ROOT }}
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+          fi
+
+      - name: Build debug APK
+        shell: bash
+        working-directory: ${{ env.PROJECT_ROOT }}
+        run: |
+          set -e
+          if [ -f ./gradlew ]; then
+            ./gradlew --no-daemon --stacktrace assembleDebug
+          else
+            gradle --no-daemon --stacktrace assembleDebug
+          fi
+
+      - name: Collect APK
+        shell: bash
+        working-directory: ${{ env.PROJECT_ROOT }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/apk-output"
+          find . -type f -name '*.apk' -exec cp {} "$GITHUB_WORKSPACE/apk-output/" \;
+          test -n "$(find "$GITHUB_WORKSPACE/apk-output" -type f -name '*.apk' -print -quit)"
+          ls -lh "$GITHUB_WORKSPACE/apk-output"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Neumor-UI-2-debug-apk
+          path: apk-output/*.apk
+          if-no-files-found: error

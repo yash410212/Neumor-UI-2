@@ -55,10 +55,13 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          if [ -f gradlew ]; then
+          echo "Gradle environment:"
+          gradle --version
+          if [ -f gradle/wrapper/gradle-wrapper.jar ]; then
             chmod +x gradlew
             ./gradlew --no-daemon --stacktrace assembleDebug
           else
+            echo "gradle-wrapper.jar missing; using installed Gradle."
             gradle --no-daemon --stacktrace assembleDebug
           fi
 

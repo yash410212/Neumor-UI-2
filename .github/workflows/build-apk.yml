@@ -32,6 +32,14 @@ jobs:
           find "$ROOT" -type f -name "build.gradle.kts" -exec sed -i "s/compileSdk = 35/compileSdk = 36/g" {} +
           find "$ROOT" -type f -name "build.gradle" -exec sed -i "s/compileSdk 35/compileSdk 36/g" {} +
           grep -R "compileSdk" "$ROOT" --include="build.gradle*" || true
+          # Kotlin/Compose compatibility fixes for the uploaded source.
+          sed -i 's/import androidx.compose.runtime.composed/import androidx.compose.ui.composed/' "$MAIN"
+          grep -q 'import androidx.compose.foundation.horizontalScroll' "$MAIN" || sed -i '/import androidx.compose.foundation.verticalScroll/a import androidx.compose.foundation.horizontalScroll' "$MAIN"
+          sed -i 's/override fun onNewIntent(intent:Intent?)/override fun onNewIntent(intent:Intent)/' "$MAIN"
+          sed -i 's/setIntent(intent)/setIntent(intent)/' "$MAIN"
+          sed -i 's/ComponentName(pkg,activity)/ComponentName(pkg ?: return,activity)/' "$MAIN"
+          echo "=== PATCHED IMPORTS ==="
+          grep -nE 'composed|horizontalScroll|onNewIntent|ComponentName\(pkg' "$MAIN" || true
           MAIN="$(find "$ROOT" -type f -name MainActivity.kt -print -quit)"
           test -n "$MAIN"
           echo "=== MAINACTIVITY DIAGNOSTIC ==="

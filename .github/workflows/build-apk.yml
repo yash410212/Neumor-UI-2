@@ -35,6 +35,9 @@ jobs:
           MAIN="$(find "$ROOT" -type f -name MainActivity.kt -print -quit)"
           test -n "$MAIN"
           # Kotlin/Compose compatibility fixes for the uploaded source.
+          # Print numbered source around every compiler-reported area before patching.
+          echo "=== SOURCE ERROR AREAS ==="
+          nl -ba "$MAIN" | sed -n '205,220p;705,730p;755,780p;920,935p;1095,1105p;1195,1225p;1318,1327p'
           sed -i 's/import androidx.compose.runtime.composed/import androidx.compose.ui.composed/' "$MAIN"
           grep -q 'import androidx.compose.foundation.horizontalScroll' "$MAIN" || sed -i '/import androidx.compose.foundation.verticalScroll/a import androidx.compose.foundation.horizontalScroll' "$MAIN"
           sed -i 's/override fun onNewIntent(intent:Intent?)/override fun onNewIntent(intent:Intent)/' "$MAIN"
